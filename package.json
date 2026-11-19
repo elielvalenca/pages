@@ -1,0 +1,26 @@
+{
+  "name": "eliel-pages",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply pages --local",
+    "db:migrate:remote": "wrangler d1 migrations apply pages --remote",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/*.test.ts scripts/*.test.ts",
+    "test:unit": "node --test src/index.test.ts src/router.test.ts scripts/*.test.ts",
+    "test:integration": "node --test src/worker.integration.test.ts",
+    "route": "node scripts/routes.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261117.1",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.164.0"
+  }
+}
