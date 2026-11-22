@@ -9,3 +9,8 @@ dist/
 .vscode/
 .idea/
 
+# Configuração local do Cloudflare Wrangler (gerada a partir de wrangler.jsonc.example)
+wrangler.jsonc
+!wrangler.jsonc.example
+
+

@@ -76,7 +76,7 @@ CREATE TABLE routes (
 .
 ├── AGENTS.md                  # Este arquivo de diretrizes
 ├── SPEC.md                    # Especificação inicial do projeto
-├── wrangler.jsonc             # Configuração do Worker, D1 e Static Assets (run_worker_first = true)
+├── wrangler.jsonc.example     # Template de configuração do Worker, D1 e Static Assets (copiado para wrangler.jsonc)
 ├── src/
 │   ├── index.ts               # Entrypoint do Cloudflare Worker (roteamento, cache, merge de UTMs, rewrite)
 │   ├── index.test.ts          # Testes unitários com dublês rápidos de D1/ASSETS/Cache

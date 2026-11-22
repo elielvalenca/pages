@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { copyFileSync, existsSync, unlinkSync } from "node:fs";
 import { after, before, describe, it } from "node:test";
 import type { TestHarness } from "wrangler";
 
@@ -13,8 +14,15 @@ describe("Worker Integration Tests (Wrangler Test Harness)", () => {
     DB: D1Database;
     ROOT_REDIRECT_URL: string;
   };
+  let createdTempConfig = false;
 
   before(async () => {
+    // Se wrangler.jsonc não existir (ex: clone limpo de template), gerar temporariamente a partir de wrangler.jsonc.example
+    if (!existsSync("./wrangler.jsonc") && existsSync("./wrangler.jsonc.example")) {
+      copyFileSync("./wrangler.jsonc.example", "./wrangler.jsonc");
+      createdTempConfig = true;
+    }
+
     const { createTestHarness } = await import("wrangler");
 
     server = createTestHarness({
@@ -53,6 +61,13 @@ describe("Worker Integration Tests (Wrangler Test Harness)", () => {
   after(async () => {
     if (server) {
       await server.close();
+    }
+    if (createdTempConfig && existsSync("./wrangler.jsonc")) {
+      try {
+        unlinkSync("./wrangler.jsonc");
+      } catch {
+        // Ignorar se já removido
+      }
     }
   });
 

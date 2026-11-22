@@ -2,7 +2,7 @@
 
 Plataforma unificada na borda (Cloudflare) para **encurtador de links / redirecionamentos** e **hospedagem isolada de landing pages estáticas** sob o mesmo namespace raiz (`https://eliel.page/<slug>`), sem prefixos de URL.
 
-- **`GET /`**: redireciona (`301`) para `https://elielvalenca.com` (`ROOT_REDIRECT_URL` em `wrangler.jsonc`).
+- **`GET /`**: redireciona (`301`) para `https://elielvalenca.com` (`ROOT_REDIRECT_URL` configurado em `wrangler.jsonc`).
 - **`GET /<slug>` (redirect)**: redireciona com status `301` (padrão) ou `302` configurável por rota, com merge automático de query params/UTMs.
 - **`GET /<slug>` (page)**: serve internamente `public/_pages/<target>/index.html` preservando a URL limpa no navegador. Qualquer tentativa de acesso direto a `/_pages/*` ou `/404.html` retorna `404`.
 - **Rotas inexistentes ou inativas (`active = 0`)**: retornam `public/404.html` com status HTTP `404`.
@@ -25,7 +25,7 @@ Plataforma unificada na borda (Cloudflare) para **encurtador de links / redireci
 .
 ├── AGENTS.md                        # Diretrizes arquiteturais e regras de negócio
 ├── SPEC.md                          # Especificação inicial do projeto
-├── wrangler.jsonc                   # Configuração do Worker, D1 e Static Assets
+├── wrangler.jsonc.example           # Template de configuração do Worker, D1 e Static Assets
 ├── package.json                     # Scripts de dev, deploy, D1, testes e CLI
 ├── tsconfig.json                    # Configuração TypeScript
 ├── migrations/
@@ -69,7 +69,23 @@ npm install
 > npm install
 > ```
 
-### 2. Inicializar e Migrar o Banco D1 Local
+### 2. Configurar o Arquivo do Wrangler (`wrangler.jsonc`)
+
+Como este repositório é um **template público** e atua como upstream para instâncias e repositórios privados, o arquivo final `wrangler.jsonc` é ignorado no Git (`.gitignore`) para evitar conflitos de merge ao sincronizar atualizações.
+
+Gere o seu arquivo local a partir do template de exemplo:
+
+```bash
+cp wrangler.jsonc.example wrangler.jsonc
+```
+
+> [!TIP]
+> No `wrangler.jsonc`, você pode customizar:
+> - `name`: Nome do Worker na Cloudflare.
+> - `vars.ROOT_REDIRECT_URL`: Destino do redirecionamento da rota raiz (`/`).
+> - `database_id`: ID do seu banco D1 remoto criado na Cloudflare.
+
+### 3. Inicializar e Migrar o Banco D1 Local
 
 O Wrangler mantém uma instância local em SQLite dentro de `.wrangler/state/v3/d1`. Aplique as migrations antes de rodar o servidor ou a CLI:
 
@@ -77,7 +93,7 @@ O Wrangler mantém uma instância local em SQLite dentro de `.wrangler/state/v3/
 npm run db:migrate:local
 ```
 
-### 3. Gerenciar e Testar Rotas no Banco Local via CLI (`npm run route`)
+### 4. Gerenciar e Testar Rotas no Banco Local via CLI (`npm run route`)
 
 A CLI em `scripts/routes.ts` opera no banco D1 **local por padrão**:
 
@@ -103,7 +119,7 @@ npm run route -- delete live-hoje
 
 > Use `npm run route -- --help` para ver todas as opções (`--inactive`, `--skip-asset-check`, `--remote`, etc.).
 
-### 4. Inspecionar o Banco D1 Local via SQL Direto
+### 5. Inspecionar o Banco D1 Local via SQL Direto
 
 Se quiser executar consultas SQL ad-hoc diretamente contra o SQLite local do D1:
 
@@ -111,7 +127,7 @@ Se quiser executar consultas SQL ad-hoc diretamente contra o SQLite local do D1:
 npx wrangler d1 execute pages --local --command "SELECT * FROM routes;"
 ```
 
-### 5. Subir o Servidor Local e Testar Requisições
+### 6. Subir o Servidor Local e Testar Requisições
 
 Inicie o Worker + Static Assets localmente com o Wrangler:
 
@@ -207,7 +223,7 @@ npx wrangler whoami
    ```bash
    npx wrangler d1 create pages
    ```
-2. O comando retornará um bloco de configuração contendo o `database_id` criado (UUID). Copie esse valor e atualize o campo `database_id` em [wrangler.jsonc](./wrangler.jsonc):
+2. O comando retornará um bloco de configuração contendo o `database_id` criado (UUID). Copie esse valor e atualize o campo `database_id` no seu `wrangler.jsonc` (gerado a partir de [wrangler.jsonc.example](./wrangler.jsonc.example)):
    ```jsonc
    "d1_databases": [
      {
@@ -250,7 +266,7 @@ O template inclui uma pipeline pronta em [.github/workflows/deploy.yml](./.githu
     - **Account** -> **D1** -> *Edit*
     - **Zone** -> **Workers Routes** -> *Edit* (caso anexe o Worker a um domínio customizado de zona)
   - `CLOUDFLARE_ACCOUNT_ID`: Account ID da conta Cloudflare (disponível no Dashboard da Cloudflare).
-  - `CLOUDFLARE_D1_DATABASE_ID` (*opcional*): UUID do banco D1 retornado por `npx wrangler d1 create pages`. Caso você já tenha preenchido o `database_id` no [wrangler.jsonc](./wrangler.jsonc), esta secret não é necessária; se configurada, a pipeline injeta o valor dinamicamente durante o deploy.
+  - `CLOUDFLARE_D1_DATABASE_ID` (*opcional*): UUID do banco D1 retornado por `npx wrangler d1 create pages`. Caso você já tenha preenchido o `database_id` no `wrangler.jsonc`, esta secret não é necessária; se configurada, a pipeline injeta o valor dinamicamente durante o deploy.
 
 ---
 

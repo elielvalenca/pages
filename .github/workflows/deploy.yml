@@ -52,6 +52,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare wrangler.jsonc
+        run: |
+          if [ ! -f wrangler.jsonc ]; then
+            cp wrangler.jsonc.example wrangler.jsonc
+          fi
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -84,6 +90,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Prepare wrangler.jsonc
+        run: |
+          if [ ! -f wrangler.jsonc ]; then
+            cp wrangler.jsonc.example wrangler.jsonc
+          fi
 
       - name: Configure D1 Database ID
         if: env.D1_DATABASE_ID != ''
