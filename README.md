@@ -235,6 +235,23 @@ npx wrangler whoami
    npm run route -- list --remote
    ```
 
+### 4. Deploy Automatizado via CI/CD (GitHub Actions)
+
+O template inclui uma pipeline pronta em [.github/workflows/deploy.yml](./.github/workflows/deploy.yml):
+
+- **Disparos**:
+  - `push` na branch `main`: executa testes e, em caso de sucesso, aplica as migrations no D1 remoto e publica o Worker com os Static Assets.
+  - `pull_request` contra `main`: valida typecheck TypeScript, testes unitários, testes de integração e dry-run do bundle (sem realizar deploy).
+  - `workflow_dispatch`: permite disparar a pipeline manualmente pela aba Actions do GitHub.
+
+- **Secrets Necessárias no GitHub** (em **Settings > Secrets and variables > Actions**):
+  - `CLOUDFLARE_API_TOKEN`: Token de API da Cloudflare (*My Profile > API Tokens > Create Token* usando *Custom Token*) com permissões:
+    - **Account** -> **Workers Scripts** -> *Edit*
+    - **Account** -> **D1** -> *Edit*
+    - **Zone** -> **Workers Routes** -> *Edit* (caso anexe o Worker a um domínio customizado de zona)
+  - `CLOUDFLARE_ACCOUNT_ID`: Account ID da conta Cloudflare (disponível no Dashboard da Cloudflare).
+  - `CLOUDFLARE_D1_DATABASE_ID` (*opcional*): UUID do banco D1 retornado por `npx wrangler d1 create pages`. Caso você já tenha preenchido o `database_id` no [wrangler.jsonc](./wrangler.jsonc), esta secret não é necessária; se configurada, a pipeline injeta o valor dinamicamente durante o deploy.
+
 ---
 
 ## Governança e Documentação
