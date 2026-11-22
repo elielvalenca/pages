@@ -14,8 +14,29 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  check-secrets:
+    name: Check Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      has_secrets: ${{ steps.check.outputs.has_secrets }}
+    steps:
+      - name: Verify Cloudflare Secrets Availability
+        id: check
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Cloudflare secrets are not configured in this repository. Skipping pipeline."
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
+          fi
+
   test:
     name: Test & Build
+    needs: check-secrets
+    if: needs.check-secrets.outputs.has_secrets == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -42,8 +63,8 @@ jobs:
 
   deploy:
     name: Deploy to Cloudflare
-    needs: test
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: [check-secrets, test]
+    if: needs.check-secrets.outputs.has_secrets == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     concurrency:
       group: production-deploy
