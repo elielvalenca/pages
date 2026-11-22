@@ -240,4 +240,3 @@ npx wrangler whoami
 ## Governança e Documentação
 
 - [AGENTS.md](./AGENTS.md): diretrizes arquiteturais, regras de roteamento/cache, modelo de dados e fluxo com **OpenSpec** (obrigatório para novas features; chores, infra e fixes não exigem change).
-- [SPEC.md](./SPEC.md): especificação mínima inicial que originou o projeto.
